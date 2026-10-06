@@ -63,6 +63,15 @@ Whisper runs on CPU — a 45-minute meeting takes ~3-5 min to become a note.
 | `CLAUDE_BIN`          | `claude`                               | Path to the Claude Code CLI. Use an absolute path if autostart cannot see `~/.local/bin`. |
 | `ANTHROPIC_API_KEY`   | —                                      | Required **only if** `SUMMARIZER_BACKEND=anthropic_api`. |
 
+## Consuming the notes (optional)
+
+local-scribe's job ends when the note lands in your vault. Optional **agent
+skills** in [`skills/`](skills/) help you process those notes day-to-day in the
+agent you already use (Claude Code): `process-inbox` (split signal from noise →
+daily notes + action items → archive) and `extract-actions` (pull action items
+from one note). See [skills/README.md](skills/README.md) to install. Nothing
+there is required to run local-scribe.
+
 ## Troubleshooting
 
 **Tray icon does not appear**
