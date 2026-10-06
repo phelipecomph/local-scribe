@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Meeting Recorder
+Comment=System-tray daemon for invisible meeting capture
+Exec=__VENV_PYTHON__ -m recorder.daemon
+Path=__REPO_DIR__
+Icon=audio-input-microphone
+Terminal=false
+X-GNOME-Autostart-enabled=true
+NoDisplay=false
+Categories=Utility;
