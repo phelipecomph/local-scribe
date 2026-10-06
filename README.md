@@ -1,24 +1,52 @@
 # local-scribe
 
-A 100% local audio-capture → note pipeline for Ubuntu (GNOME/Wayland) and Windows (WSL2).
-A shortcut starts it, a tray icon reminds you it is on, a shortcut ends it → Whisper transcribes, Claude summarizes, the note lands in Obsidian.
+A 100% local audio-to-note pipeline for Ubuntu (GNOME/Wayland) and Windows (WSL2).
+Press a shortcut to start, a tray icon reminds you it is recording, press another to stop →
+Whisper transcribes **on your machine**, Claude writes a clean summary, and the note lands in
+your Obsidian vault.
 
 No bots. No cloud audio. No friction.
 
+## The problem it solves
+
+Meeting-notetaker bots join your call, record to someone else's cloud, and feel wrong for 1:1s,
+hallway chats, or anything sensitive — and you still end up copy-pasting transcripts by hand.
+local-scribe flips that: **no bot joins the meeting**, the **audio never leaves your computer**
+(capture and transcription are local), and you get a structured Markdown note in your vault
+automatically. Two modes: press-to-record for meetings, and an always-on "ambient" mode that
+quietly turns your day's audio into notes.
+
 > The runtime service (daemon, venv, socket, autostart) uses the internal name `meeting-recorder`.
 
-## Setup from scratch
+## Prerequisites
+
+- **Ubuntu** (GNOME/Wayland) or **Windows 10/11 with WSL2**. *(macOS not supported yet.)*
+- A **summarizer** — pick one (the installer asks you):
+  - **Claude Code** already installed (`claude` on your PATH) → nothing else needed (default), or
+  - an **Anthropic API key** (the installer prompts for it), or
+  - a local **Ollama** model for fully-offline summaries (set it in `.env` afterward).
+- Everything else (Python, audio tools, the tray icon) is installed for you. The first recording
+  also downloads the Whisper speech model once (~466 MB) — the installer pre-fetches it.
+
+## Install (step by step)
+
+New to the terminal? These lines are the whole thing — paste them one at a time.
 
 ```bash
+# 1. get the code
 git clone <this-repo>
 cd local-scribe
-cp config.example.env .env
-# edit .env and fill in ANTHROPIC_API_KEY (or use the claude_cli backend)
+
+# 2. run the installer — it asks one or two questions, then sets everything up and starts it
 bash install.sh --start-now
 ```
 
-`install.sh` is idempotent — running it again only corrects drift, it does not break anything.
-On a new machine, adjust `VAULT_PATH` in `.env` if the vault is not at `~/Documents/obsidian-vault`.
+The installer asks which summarizer to use (and your API key if you choose that), installs the
+dependencies, registers the keyboard shortcuts, pre-downloads the Whisper model, and launches
+the tray app. Re-run it any time — it is idempotent (fixes drift, never breaks a working setup).
+
+Your notes land in your Obsidian vault at `~/Documents/obsidian-vault/inbox/` by default. On a
+different setup, open the generated `.env` and change `VAULT_PATH`.
 
 ## Usage
 

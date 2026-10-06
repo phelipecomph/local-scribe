@@ -79,12 +79,45 @@ say "Installing Python requirements (no-op if satisfied)"
 "${VENV_DIR}/bin/pip" install --quiet -r "${REPO_DIR}/requirements.txt"
 
 # ── 3. .env bootstrap ────────────────────────────────────────────────────────
-if [[ ! -f "${REPO_DIR}/.env" ]]; then
-  cp "${REPO_DIR}/config.example.env" "${REPO_DIR}/.env"
-  warn "${REPO_DIR}/.env created from template. Edit it and set ANTHROPIC_API_KEY."
+if [[ -f "${REPO_DIR}/.env" ]]; then
+  say ".env already present — leaving it untouched"
 else
-  say ".env already present"
+  cp "${REPO_DIR}/config.example.env" "${REPO_DIR}/.env"
+  if [[ -t 0 ]]; then
+    echo
+    say "How should summaries be generated?"
+    echo "  1) Claude Code CLI    (recommended if 'claude' is installed — no API key, no per-token billing)"
+    echo "  2) Anthropic API key  (billed per token)"
+    echo "  3) Decide later       (edit .env yourself)"
+    printf "Choice [1]: "
+    read -r choice
+    case "${choice:-1}" in
+      2)
+        sed -i 's/^SUMMARIZER_BACKEND=.*/SUMMARIZER_BACKEND=anthropic_api/' "${REPO_DIR}/.env"
+        printf "Paste your ANTHROPIC_API_KEY (input hidden): "
+        read -rs apikey; echo
+        [[ -n "${apikey}" ]] && sed -i "s|^ANTHROPIC_API_KEY=.*|ANTHROPIC_API_KEY=${apikey}|" "${REPO_DIR}/.env"
+        ;;
+      3)
+        warn "Left .env with defaults — edit ${REPO_DIR}/.env before first use."
+        ;;
+      *)
+        sed -i 's/^SUMMARIZER_BACKEND=.*/SUMMARIZER_BACKEND=claude_cli/' "${REPO_DIR}/.env"
+        ;;
+    esac
+  else
+    warn "${REPO_DIR}/.env created from template (non-interactive). Edit it before first use."
+  fi
 fi
+
+# ── 3.5 pre-download the Whisper model (one-time, best-effort) ────────────────
+model="$(grep -E '^WHISPER_MODEL=' "${REPO_DIR}/.env" 2>/dev/null | tail -1 | cut -d= -f2- | tr -d '"')"
+model="${model:-small}"
+say "Pre-downloading Whisper model '${model}' (one-time; safe to skip if offline)"
+"${VENV_DIR}/bin/python" - <<PY || warn "Whisper model pre-download skipped — it will download on the first recording."
+import whisper
+whisper.load_model("${model}")
+PY
 
 # ── 4. GNOME custom keyboard shortcuts (idempotent) ──────────────────────────
 say "Registering GNOME shortcuts (Super+Shift+R / Super+Shift+S)"
